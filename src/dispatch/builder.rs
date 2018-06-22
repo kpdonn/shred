@@ -2,9 +2,9 @@ use std::fmt;
 
 use fxhash::FxHashMap;
 
-use dispatch::Dispatcher;
 use dispatch::dispatcher::{SystemId, ThreadLocal};
 use dispatch::stage::StagesBuilder;
+use dispatch::Dispatcher;
 use system::{RunNow, System};
 
 /// Builder for the [`Dispatcher`].
@@ -123,7 +123,7 @@ impl<'a, 'b> DispatcherBuilder<'a, 'b> {
     /// * if a system with the same name was already registered.
     pub fn with<T>(mut self, system: T, name: &str, dep: &[&str]) -> Self
     where
-        T: for<'c> System<'c> + Send + 'a,
+        for<'c> T: System<'c> + Send + 'a,
     {
         self.add(system, name, dep);
 
@@ -150,9 +150,11 @@ impl<'a, 'b> DispatcherBuilder<'a, 'b> {
 
         let id = self.next_id();
 
-        let dependencies = dep.iter()
+        let dependencies = dep
+            .iter()
             .map(|x| {
-                *self.map
+                *self
+                    .map
                     .get(*x)
                     .expect(&format!("No such system registered (\"{}\")", *x))
             })
